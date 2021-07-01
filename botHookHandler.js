@@ -1,5 +1,33 @@
 function doPost(e) {
 
+    // Объявление констант
+    // id бота
+    // id чата, которому уходит сообщение о неизвестном пользователе
+    // id таблицы
+    // наименование листа с резолюциями
+    // наименование листа с списком соответствия пользователей и регионов
+
+    // Получаем сигнал бота
+
+    // Проверяем, что это сообщение
+
+    // Получаем объект таблицы по id
+
+    // Объект авторизации, авторизован ли пользователь?
+
+    // (нет) сообщаем о необходимости авторизации
+
+    // (да) проверяем команду от пользователя
+
+    // Если резолюции
+    // получаем регион пользователя
+
+    // получаем резолюции по региону и отправляем их пользователю
+
+    // Если контакты возвращаем контакты
+
+
+
     // получаем сигнал от бота
     let update = JSON.parse(e.postData.contents);
     let sheet =  SpreadsheetApp.openById('17S6qp8a_9gXEyrfF--aVtIucgrb4ecojtPsZ6NG_AQE').getSheets()[0]
@@ -69,5 +97,94 @@ function temp(e) {
     let comandNumRow = arrayComands.indexOf("/Altai_region") + 2;
 
     Logger.log(API_TOKEN)
+
+}
+
+/**
+ * Объект авторизации
+ * @param googleSpreadsheet - Объект гугл таблицы
+ * @param userData          - Данные пользователя
+ * @constructor
+ */
+function ResBotAuth(googleSpreadsheet, userData){
+
+    let ResBotAuth = {};
+
+    ResBotAuth.listName = "Авторизация";
+    ResBotAuth.googleSpreadsheet = googleSpreadsheet;
+
+    // Получение массива пользователей
+    ResBotAuth.getUsersFromSheet = function (){
+
+    };
+
+    // Пользователь есть в таблице
+    ResBotAuth.userIsInSheet = function (){
+
+    };
+
+    // Отправка предложения авторизации
+    ResBotAuth.sendAuthorizationOffer = function (){
+
+    };
+
+    // Отправка предложения авторизации
+    ResBotAuth.sendAuthorizationAttemptForAdmin = function (adminChatId){
+
+    };
+
+    return ResBotAuth;
+
+}
+
+/**
+ * Объект со списком регионов и соответствующих пользователей
+ * @param googleSpreadsheet - Объект гугл таблицы
+ * @constructor
+ */
+function ResBotRegions(googleSpreadsheet){
+
+    let ResBotRegions = {};
+
+    ResBotRegions.listName = "Авторизация";
+    ResBotRegions.googleSpreadsheet = googleSpreadsheet;
+
+    // Получение массива - регион -> пользователи
+    ResBotRegions.getRegionsAndUsersFromSheet = function (){
+
+    };
+
+    // Получение региона по пользователю
+    ResBotRegions.getRegionByUser = function (){
+
+    };
+
+    return ResBotRegions;
+
+}
+
+/**
+ * Объект со списком (текстовым сообщением) резолюций
+ * @param googleSpreadsheet - Объект гугл таблицы
+ * @constructor
+ */
+function ResBotResolutions(googleSpreadsheet){
+
+    let ResBotResolutions = {};
+
+    ResBotResolutions.listName = "Бот";
+    ResBotResolutions.googleSpreadsheet = googleSpreadsheet;
+
+    // Получение массива - регион -> резолюции
+    ResBotResolutions.getResolutionsFromSheet = function (){
+
+    };
+
+    // Получение резолюций по региону
+    ResBotResolutions.getResolutionByRegion = function (){
+
+    };
+
+    return ResBotResolutions;
 
 }
