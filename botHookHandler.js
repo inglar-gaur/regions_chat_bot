@@ -280,21 +280,47 @@ function ResBotResolutions(googleSpreadsheet){
  */
 function ResBotSettingsAndMessages(googleSpreadsheet){
 
-    let ResBotSettingsAndMessages = {};
+    const ResBotSettingsAndMessages = {
 
-    ResBotSettingsAndMessages.listName = "Бот";
+        listName: "Настройки и сообщения",
+        googleSpreadsheet: undefined,
+        messages: {},
+
+        /**
+         * Заполнение массива сообщений и настроек из таблицы
+         */
+        getFromSheet: function (){
+            if(this.googleSpreadsheet && this.googleSpreadsheet.hasOwnProperty("getSheetByName")){
+                let sheet = this.googleSpreadsheet.getSheetByName(this.listName);
+                let rows = sheet.getRange(1, 1, sheet.getLastRow()-1, 2).getValues();
+
+                if(rows.length > 0){
+                    for(let i = 0; i < rows.length; i++){
+                        if(rows[i][0]){
+                            this.messages[rows[i][0]] = rows[i][1];
+                        }
+                    }
+                }
+            }
+        },
+
+        /**
+         * Получение настройки или сообщения из таблицы
+         * @param {String}  slug    - Слаг настройки или сообщения
+         * @returns {string}
+         */
+        getBySlug: function (slug){
+
+            if(slug && this.messages.hasOwnProperty(slug) && this.messages[slug]){
+                return String(this.messages[slug]);
+            }
+
+            return "";
+        }
+    };
+
     ResBotSettingsAndMessages.googleSpreadsheet = googleSpreadsheet;
-
-    // Получение массива - регион -> резолюции
-    ResBotSettingsAndMessages.getFromSheet = function (){
-
-    };
-
-    // Получение резолюций по региону
-    ResBotSettingsAndMessages.getBySlug = function (){
-
-        return "";
-    };
+    ResBotSettingsAndMessages.getFromSheet();
 
     return ResBotSettingsAndMessages;
 }
