@@ -139,36 +139,86 @@ function temp(e) {
 }
 
 /**
- * Объект авторизации
+ * Объект работы с пользователем
  * @param googleSpreadsheet - Объект гугл таблицы
  * @param userData          - Данные пользователя
  */
 function ResBotUser(googleSpreadsheet, userData){
 
-    let ResBotAuth = {};
+    const ResBotAuth = {
 
-    ResBotAuth.listName = "Авторизация";
+        listName:           "Авторизация",
+        googleSpreadsheet:  undefined,
+        userData:           undefined,
+
+        /**
+         * Присутствует ли пользователь в таблице
+         * @returns {boolean}
+         */
+        userIsInSheet: function (){
+
+            // Объект таблицы существует как и метод получения листа в нём так же передан id чата пользователя
+            if(this.googleSpreadsheet && this.googleSpreadsheet.hasOwnProperty("getSheetByName") && this.userData && this.userData.chatId){
+                let sheet = this.googleSpreadsheet.getSheetByName(this.listName);
+                let users = sheet.getRange(1, 2, sheet.getLastRow()-1).getValues();
+
+                if(users.length > 0){
+                    for(let i = 0; i < users.length; i++){
+                        if(users[i][0] && ~users[i][0].indexOf(this.userData.chatId)){
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        },
+
+        /**
+         * Получение данных пользователя в виде строки
+         * @returns {string}
+         */
+        getStringUserData: function (){
+
+            if(this.userData && (this.userData.firstName || this.userData.lastName || this.userData.chatId)){
+
+                return "Пользователь: " + (this.userData.firstName ? this.userData.firstName + " " : "") +
+                    (this.userData.lastName ? this.userData.lastName + " " : "") +
+                    (this.userData.chatId ? this.userData.chatId : "");
+
+            }else{
+                return "Данные пользователя отсутствуют";
+            }
+        },
+
+        /**
+         * Отправка пользователю сообщения
+         * @param {String} message - Текст сообщения
+         */
+        sendMessage: function (message){
+
+            if(this.userData && this.userData.chatId) {
+
+                //формируем с ним сообщение
+                let payload = {
+                    'method': 'sendMessage',
+                    'chat_id': String(this.userData.chatId),
+                    'text': String(message),
+                    'parse_mode': 'HTML'
+                }
+                let data = {
+                    "method": "post",
+                    "payload": payload
+                }
+
+                // и отправляем его боту (замените API на свой)
+                UrlFetchApp.fetch('https://api.telegram.org/bot' + ApiBotToken + '/', data);
+            }
+        }
+    };
+
     ResBotAuth.googleSpreadsheet = googleSpreadsheet;
     ResBotAuth.userData = userData;
-
-    // Получение массива пользователей
-    ResBotAuth.getUsersFromSheet = function (){
-
-    };
-
-    // Пользователь есть в таблице
-    ResBotAuth.userIsInSheet = function (){
-
-    };
-
-    ResBotAuth.getStringUserData = function (){
-
-    };
-
-    // Отправить пользователю сообщение
-    ResBotAuth.sendMessage = function (){
-
-    };
 
     return ResBotAuth;
 
