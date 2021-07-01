@@ -1,36 +1,75 @@
+// Объявление констант
+const SpreadsheetId = '17S6qp8a_9gXEyrfF--aVtIucgrb4ecojtPsZ6NG_AQE';
+const ApiBotToken = '1849336221:AAGBmoyYig9kyg30c1T1k0zbrNcayIdwrcA';
+
 function doPost(e) {
 
-    // Объявление констант
-    // id бота
-    // id чата, которому уходит сообщение о неизвестном пользователе
-    // id таблицы
-    // наименование листа с резолюциями
-    // наименование листа с списком соответствия пользователей и регионов
-
     // Получаем сигнал бота
+    let update = JSON.parse(e.postData.contents);
 
-    // Проверяем, что это сообщение
+    // Проверяем, что это сообщение и оно не пустое
+    if (update.hasOwnProperty('message') && update.message.hasOwnProperty('text')) {
 
-    // Получаем объект таблицы по id
+        // Получаем объект таблицы по id
+        let spreadsheet = SpreadsheetApp.openById(SpreadsheetId);
 
-    // Объект авторизации, авторизован ли пользователь?
+        // Объект данных пользователя
+        let userData = {
+            firstName: update.message.from.first_name,
+            lastName: update.message.from.last_name,
+            chatId: update.message.chat.id
+        };
+        let currentUser = ResBotUser(spreadsheet, userData);
 
-    // (нет) сообщаем о необходимости авторизации
+        let messagesAndSettings = ResBotSettingsAndMessages(spreadsheet);
 
-    // (да) проверяем команду от пользователя
+        // Авторизован ли пользователь?
+        if (!currentUser.userIsInSheet()) {
 
-    // Если резолюции
-    // получаем регион пользователя
+            // сообщаем о необходимости авторизации
+            currentUser.sendMessage(messagesAndSettings.getBySlug("/authorizationOffer"));
 
-    // получаем резолюции по региону и отправляем их пользователю
+            // Уведомляем ответственного о попытке
+            let authAdmin = ResBotUser(spreadsheet, {chatId: messagesAndSettings.getBySlug("auth_admin_chat_id")});
+            authAdmin.sendMessage(messagesAndSettings.getBySlug("/new_user") + currentUser.getStringUserData());
 
-    // Если контакты возвращаем контакты
+        } else {
+
+            // проверяем команду от пользователя
+            let commandText = update.message.text;
+
+            switch (commandText) {
+                // Если резолюции
+                case "/resolutions":
+                    // получаем регион пользователя
+                    let regions = ResBotRegions(spreadsheet);
+                    let userRegion = regions.getRegionByUser(userData.chatId);
+
+                    if(userRegion){
+
+                        // получаем резолюции по региону и отправляем их пользователю
+                        let resolutions = ResBotResolutions(spreadsheet);
+
+                        if(resolutions){
+                            currentUser.sendMessage(resolutions);
+                        }
+                    }
+
+                break;
+
+                    // Если контакты возвращаем контакты
+                case "/contacts":
+
+                    currentUser.sendMessage(messagesAndSettings.getBySlug("/contacts"));
+            }
+        }
+    }
 
 
 
     // получаем сигнал от бота
-    let update = JSON.parse(e.postData.contents);
-    let sheet =  SpreadsheetApp.openById('17S6qp8a_9gXEyrfF--aVtIucgrb4ecojtPsZ6NG_AQE').getSheets()[0]
+    // let update = JSON.parse(e.postData.contents);
+    // let sheet =  SpreadsheetApp.openById('17S6qp8a_9gXEyrfF--aVtIucgrb4ecojtPsZ6NG_AQE').getSheets()[0]
     let arraysComands = sheet.getRange(2,5, sheet.getLastRow()-1).getValues();
     let arrayComands = arraysComands.map(function (row){return row[0]})
 
@@ -68,7 +107,6 @@ function doPost(e) {
         }
 
         // и отправляем его боту (замените API на свой)
-        let API_TOKEN = '1849336221:AAGBmoyYig9kyg30c1T1k0zbrNcayIdwrcA'
         UrlFetchApp.fetch('https://api.telegram.org/bot' + API_TOKEN + '/', data);
 
         payload = {
@@ -104,14 +142,14 @@ function temp(e) {
  * Объект авторизации
  * @param googleSpreadsheet - Объект гугл таблицы
  * @param userData          - Данные пользователя
- * @constructor
  */
-function ResBotAuth(googleSpreadsheet, userData){
+function ResBotUser(googleSpreadsheet, userData){
 
     let ResBotAuth = {};
 
     ResBotAuth.listName = "Авторизация";
     ResBotAuth.googleSpreadsheet = googleSpreadsheet;
+    ResBotAuth.userData = userData;
 
     // Получение массива пользователей
     ResBotAuth.getUsersFromSheet = function (){
@@ -123,13 +161,12 @@ function ResBotAuth(googleSpreadsheet, userData){
 
     };
 
-    // Отправка предложения авторизации
-    ResBotAuth.sendAuthorizationOffer = function (){
+    ResBotAuth.getStringUserData = function (){
 
     };
 
-    // Отправка предложения авторизации
-    ResBotAuth.sendAuthorizationAttemptForAdmin = function (adminChatId){
+    // Отправить пользователю сообщение
+    ResBotAuth.sendMessage = function (){
 
     };
 
@@ -140,7 +177,6 @@ function ResBotAuth(googleSpreadsheet, userData){
 /**
  * Объект со списком регионов и соответствующих пользователей
  * @param googleSpreadsheet - Объект гугл таблицы
- * @constructor
  */
 function ResBotRegions(googleSpreadsheet){
 
@@ -166,7 +202,6 @@ function ResBotRegions(googleSpreadsheet){
 /**
  * Объект со списком (текстовым сообщением) резолюций
  * @param googleSpreadsheet - Объект гугл таблицы
- * @constructor
  */
 function ResBotResolutions(googleSpreadsheet){
 
@@ -187,4 +222,29 @@ function ResBotResolutions(googleSpreadsheet){
 
     return ResBotResolutions;
 
+}
+
+/**
+ * Получение сообщения с контактами
+ * @param googleSpreadsheet
+ */
+function ResBotSettingsAndMessages(googleSpreadsheet){
+
+    let ResBotSettingsAndMessages = {};
+
+    ResBotSettingsAndMessages.listName = "Бот";
+    ResBotSettingsAndMessages.googleSpreadsheet = googleSpreadsheet;
+
+    // Получение массива - регион -> резолюции
+    ResBotSettingsAndMessages.getFromSheet = function (){
+
+    };
+
+    // Получение резолюций по региону
+    ResBotSettingsAndMessages.getBySlug = function (){
+
+        return "";
+    };
+
+    return ResBotSettingsAndMessages;
 }
