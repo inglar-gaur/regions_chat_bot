@@ -3,7 +3,7 @@
  * @type {string}
  */
 const SpreadsheetId = '17S6qp8a_9gXEyrfF--aVtIucgrb4ecojtPsZ6NG_AQE';       // Id таблицы google sheet для хранения данных
-const ApiBotToken = '1849336221:AAGBmoyYig9kyg30c1T1k0zbrNcayIdwrcA';       // Id бота
+const ApiBotToken = 'аааааа';       // Id бота
 
 /**
  * Функция обработки запрса от бота
