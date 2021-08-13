@@ -2,7 +2,7 @@
  * Объявление констант
  * @type {string}
  */
-const SpreadsheetId = '17S6qp8a_9gXEyrfF--aVtIucgrb4ecojtPsZ6NG_AQE';       // Id таблицы google sheet для хранения данных
+const SpreadsheetId = 'аааааа';       // Id таблицы google sheet для хранения данных
 const ApiBotToken = 'аааааа';       // Id бота
 
 /**
